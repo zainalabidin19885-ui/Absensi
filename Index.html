@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi dharma wanita</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #555;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input {
+            background: #222;
+            color: white;
+            border: 1px solid #555;
+        }
+        input::placeholder {
+            color: #aaa;
+        }
+        button {
+            background: #444;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #666;
+        }
+        .check-out {
+            background: #722;
+        }
+        .check-out:hover {
+            background: #944;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #555;
+        }
+        th {
+            background: #333;
+            color: #fff;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .hadir {
+            background: #4CAF50;
+        }
+        .keluar {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>Absensi Keren - Tema Hitam</h1>
+    <div class="container">
+        <input type="text" id="nama" placeholder="Masukkan nama Anda" required>
+        <button id="checkInBtn">Check-In</button>
+        <button id="checkOutBtn" class="check-out">Check-Out</button>
+        <h2>Riwayat Absensi</h2>
+        <table id="absensiTable">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Waktu Check-In</th>
+                    <th>Waktu Check-Out</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="absensiBody">
+                <!-- Data akan dimuat di sini -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const namaInput = document.getElementById('nama');
+        const checkInBtn = document.getElementById('checkInBtn');
+        const checkOutBtn = document.getElementById('checkOutBtn');
+        const absensiBody = document.getElementById('absensiBody');
+
+        let absensiData = JSON.parse(localStorage.getItem('absensiData')) || [];
+
+        // Fungsi untuk menyimpan data
+        function saveData() {
+            localStorage.setItem('absensiData', JSON.stringify(absensiData));
+        }
+
+        // Fungsi untuk menampilkan data
+        function displayData() {
+            absensiBody.innerHTML = '';
+            absensiData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.nama}</td>
+                    <td>${item.checkIn || '-'}</td>
+                    <td>${item.checkOut || '-'}</td>
+                    <td><span class="status ${item.status === 'Hadir' ? 'hadir' : 'keluar'}">${item.status}</span></td>
+                `;
+                absensiBody.appendChild(row);
+            });
+        }
+
+        // Check-In
+        checkInBtn.addEventListener('click', () => {
+            const nama = namaInput.value.trim();
+            if (!nama) {
+                alert('Masukkan nama terlebih dahulu!');
+                return;
+            }
+            const now = new Date().toLocaleString();
+            absensiData.push({ nama, checkIn: now, checkOut: null, status: 'Hadir' });
+            saveData();
+            displayData();
+            namaInput.value = '';
+            alert(`Check-in berhasil untuk ${nama} pada ${now}`);
+        });
+
+        // Check-Out
+        checkOutBtn.addEventListener('click', () => {
+            const nama = namaInput.value.trim();
+            if (!nama) {
+                alert('Masukkan nama terlebih dahulu!');
+                return;
+            }
+            const now = new Date().toLocaleString();
+            const lastEntry = absensiData.find(item => item.nama === nama && !item.checkOut);
+            if (lastEntry) {
+                lastEntry.checkOut = now;
+                lastEntry.status = 'Keluar';
+                saveData();
+                displayData();
+                alert(`Check-out berhasil untuk ${nama} pada ${now}`);
+            } else {
+                alert('Tidak ada check-in yang belum di-check-out untuk nama ini.');
+            }
+            namaInput.value = '';
+        });
+
+        // Load data saat halaman dimuat
+        displayData();
+    </script>
+</body>
+</html>
